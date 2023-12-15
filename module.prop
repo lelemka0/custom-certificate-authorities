@@ -1,6 +1,6 @@
 id=custom-certificate-authorities
 name=Custom Certificate Authorities
-version=v0.0.1
-versionCode=1
+version=v0.1.0
+versionCode=100
 author=lelemka0
 description=This module creates an overlay that adds the user-added CAs to the system store.
