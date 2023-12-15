@@ -11,14 +11,37 @@ USER_CACERTS_DIRS="
 function _Calculate_Hash(){
     echo -n $(find $1 -type f -exec sha256sum {} + | awk '{print $2,$1}' | sort | sha256sum | awk '{print $1}')
 }
+function _Choose_Openssl(){
+    # Check CPU ABI and modify PATH
+    # Openssl binary from Termux
+    __ABI=$(getprop ro.product.cpu.abi | awk -F'-' '{print $1}')
+    echo "ABI: ${__ABI}"
+    OPENSSL_DIR="${MODDIR}/openssl/${__ABI}"
+    if [ -d "$OPENSSL_DIR" ]; then
+        echo "Select openssl dir ${OPENSSL_DIR}."
+        chmod +x $OPENSSL_DIR/openssl
+        export PATH=$PATH:$OPENSSL_DIR
+        return 0
+    fi
+    return 1
+}
 function _DER_To_PEM(){
     # The certificates that installed by user, with der format,
     # but the format of all certificates in system root certificate store is "pem" 
     # with plaintext contain the cert in base64 itself and its text below with sha1 fingerprint.
     # TODO: Convert der to pem
+    _Choose_Openssl
+    if (( $? != 0 )); then
+        echo "No openssl available, skip converting pem."
+        return 1
+    fi
+    for file in $(find $MODULE_CACERTS_DIR -type f); do
+        openssl x509 -in $file -outform PEM -out $file
+        openssl x509 -in $file -noout -text -fingerprint | tee -a $file
+    done
 }
 function _Copy_User_Cacerts(){
-    for file in $(find $1 -type f);do
+    for file in $(find $1 -type f); do
         __name=$(echo $file | awk -F'/' '{print $NF}')
         echo $file
         cp $file $MODULE_CACERTS_DIR/$__name
@@ -32,6 +55,7 @@ function Pre_Process(){
     [ "$(ls -A $MODULE_CACERTS_DIR)" == "" ] || rm $MODULE_CACERTS_DIR/*
 }
 function Post_Process(){
+    _DER_To_PEM
     chown -R root:root $MODULE_CACERTS_DIR
     chmod -R ugo-rwx,ugo+rX,u+w $MODULE_CACERTS_DIR
     chcon -R u:object_r:system_security_cacerts_file:s0 $MODULE_CACERTS_DIR
