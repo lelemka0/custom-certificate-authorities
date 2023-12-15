@@ -59,11 +59,11 @@ function Post_Process(){
     chown -R root:root $MODULE_CACERTS_DIR
     chmod -R ugo-rwx,ugo+rX,u+w $MODULE_CACERTS_DIR
     chcon -R u:object_r:system_security_cacerts_file:s0 $MODULE_CACERTS_DIR
-    [ "$(ls -A $MODULE_CACERTS_DIR)" == "" ] || touch -d "2009-01-01 00:00:00 GMT" $MODULE_CACERTS_DIR/*
+    [ "$(ls -A $MODULE_CACERTS_DIR)" == "" ] || touch -t 200901010000.00 $MODULE_CACERTS_DIR/*
 }
 function Post_Process_Apex(){
     chown -R system:system $1
-    [ "$(ls -A $1)" == "" ] || touch -d "1970-01-01 00:00:00 UTC" $1/*
+    [ "$(ls -A $1)" == "" ] || touch -t 197001010000.00 $1/*
 }
 function Mount_Apex(){
     [ -d "$APEX_CACERTS_DIR" ] && (
