@@ -83,7 +83,7 @@ function Mount_Apex(){
 
 Pre_Process
 for dir in $USER_CACERTS_DIRS; do
-    _Copy_User_Cacerts $dir
+    [ -d "$dir" ] && _Copy_User_Cacerts $dir
 done
 Post_Process
 
