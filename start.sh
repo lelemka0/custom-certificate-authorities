@@ -14,10 +14,12 @@ function _Choose_Openssl(){
     __ABI=$(getprop ro.product.cpu.abi | awk -F'-' '{print $1}')
     echo "ABI: ${__ABI}"
     OPENSSL_DIR="${MODDIR}/openssl/${__ABI}"
+    OPENSSL_LIBS_DIR="${OPENSSL_DIR}/libs"
     if [ -d "$OPENSSL_DIR" ]; then
         echo "Select openssl dir ${OPENSSL_DIR}."
         chmod +x $OPENSSL_DIR/openssl
         export PATH=$PATH:$OPENSSL_DIR
+        export LD_LIBRARY_PATH:=$LD_LIBRARY_PATH:$OPENSSL_LIBS_DIR
         return 0
     fi
     return 1
